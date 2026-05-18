@@ -1,6 +1,6 @@
 import { GraphNode, GraphEdge, GraphState } from "./types";
 
-// ─── Helper ──────────────────────────────────────────────────────────────────
+// ─── Helper — place child nodes in a circle around a parent ──────────────────
 function ring(
   nodes: GraphNode[],
   edges: GraphEdge[],
@@ -8,19 +8,24 @@ function ring(
   cx: number,
   cy: number,
   labels: string[],
-  radius = 310
+  radius = 280
 ) {
   const step = (2 * Math.PI) / labels.length;
   labels.forEach((label, i) => {
     const angle = i * step - Math.PI / 2;
     const id = `${parentId}_s${i}`;
-    nodes.push({ id, type: "SYSTEM", label, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, parentId });
+    nodes.push({
+      id, type: "SYSTEM", label,
+      x: cx + Math.cos(angle) * radius,
+      y: cy + Math.sin(angle) * radius,
+      parentId
+    });
     edges.push({ id: `e_${parentId}_${id}`, from: parentId, to: id });
   });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 1 — SYSTEMS MAP
+// SECTION 1 — SYSTEMS MAP  (x: 600–5500)
 // ═══════════════════════════════════════════════════════════════════════════════
 const categories = [
   { id: "c1",  label: "CORE GAMEPLAY LOOP",   color: "#00ff41", x: 3000, y: 2000, systems: ["Spawn Point","Job Selection","Earn Money","Buy Items","Player Conflict","Death and Respawn","Persistent World","Session Length"] },
@@ -71,11 +76,11 @@ nodes.push({ id: "wf_hub", type: "CATEGORY", label: "WEALTH FLOW", x: WF_X, y: W
   nodes.push({ id, type: "SYSTEM", label, x: WF_X + Math.cos(angle) * WF_R, y: WF_Y + Math.sin(angle) * WF_R, parentId: "wf_hub" });
   edges.push({ id: `e_wf_${id}`, from: "wf_hub", to: id });
 });
-[["c1","wf_hub"],["wf_hub","c2"],["wf_hub","c4"],["wf_hub","c5"],["wf_hub","c9"],["wf_hub","c11"]].forEach(([f,t]) =>
+[["c1","wf_hub"],["wf_hub","c2"],["wf_hub","c4"],["wf_hub","c5"],["wf_hub","c9"],["wf_hub","c11"]].forEach(([f, t]) =>
   edges.push({ id: `e_${f}_${t}_wf`, from: f, to: t })
 );
 
-// Notes
+// Notes for systems map
 [
   { id: "n1", label: "Crime Loop: Drug Cooks -> Black Market -> Gun Dealers -> Raiders -> Police Response", x: 4400, y: 3300 },
   { id: "n2", label: "Political Loop: Mayor sets taxes -> Citizens revolt -> Gang fills power vacuum", x: 4500, y: 1300 },
@@ -84,61 +89,66 @@ nodes.push({ id: "wf_hub", type: "CATEGORY", label: "WEALTH FLOW", x: WF_X, y: W
   { id: "n5", label: "Wealth Flow Hub: Money is created, stored, taxed, stolen, laundered, weaponized, and lost on death.", x: 3400, y: 2900 },
 ].forEach(n => nodes.push({ id: n.id, type: "NOTE", label: n.label, x: n.x, y: n.y }));
 
-// Category edges
-[["c1","c2"],["c1","c3"],["c1","c9"],["c2","c11"],["c2","c6"],["c2","c4"],["c3","c5"],["c3","c4"],["c3","c6"],
- ["c4","c5"],["c5","c9"],["c5","c10"],["c5","c11"],["c12","c8"],["c13","c1"],["c13","c2"],["c14","c1"],
- ["c14","c8"],["c10","c2"],["c7","c9"],["c8","c12"]
-].forEach(([f,t]) => edges.push({ id: `e_${f}_${t}`, from: f, to: t }));
+// Category-to-category edges
+[
+  ["c1","c2"],["c1","c3"],["c1","c9"],["c2","c11"],["c2","c6"],["c2","c4"],
+  ["c3","c5"],["c3","c4"],["c3","c6"],["c4","c5"],["c5","c9"],["c5","c10"],
+  ["c5","c11"],["c12","c8"],["c13","c1"],["c13","c2"],["c14","c1"],["c14","c8"],
+  ["c10","c2"],["c7","c9"],["c8","c12"],
+].forEach(([f, t]) => edges.push({ id: `e_${f}_${t}`, from: f, to: t }));
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 2 — JOB DETAIL MAP  (starts at x ≈ 7000, entirely separate)
+// SECTION 2 — JOB DETAIL MAP  (x: 6400–8600  same y range as systems map)
+// Only ~900px gap from the systems map right edge (~5500)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Section header & divider
-nodes.push({ id: "jdm_header", type: "NOTE", label: "// JOB FUNCTION MAP — each job's complete web of income, risk, tools, and interactions", x: 8200, y: 100 });
-nodes.push({ id: "jdm_divider", type: "NOTE", label: "← DARK RP STRUCTURE   //   JOB DETAIL MAP →", x: 6150, y: 2100 });
+// Section divider + header
+nodes.push({ id: "jdm_divider", type: "NOTE", label: "//  ──────────────────────────────────────────────────────────────  //", x: 5950, y: 1800 });
+nodes.push({ id: "jdm_label",   type: "NOTE", label: "JOB FUNCTION MAP", x: 5950, y: 2000 });
+nodes.push({ id: "jdm_sub",     type: "NOTE", label: "each job's income, risk, tools & interactions", x: 5950, y: 2150 });
 
-// ── Job definitions ───────────────────────────────────────────────────────────
+// ─── Job definitions ──────────────────────────────────────────────────────────
+// 2-column layout: col A = x:6800, col B = x:8200 | rows spaced 1300 apart
 const jobs = [
   {
-    id: "j_citizen", label: "CITIZEN", color: "#d4d4d4", x: 7400, y: 1200,
+    id: "j_citizen",    label: "CITIZEN",        color: "#d4d4d4", x: 6800, y: 800,
     systems: ["Basic Wage","Property Rental","Mugging Target","Voting Rights","Business Patron","Freelance Work","Witness Role","Self Defense"],
   },
   {
-    id: "j_gundealer", label: "GUN DEALER", color: "#ff8c00", x: 9200, y: 1200,
+    id: "j_gundealer",  label: "GUN DEALER",     color: "#ff8c00", x: 8200, y: 800,
     systems: ["Weapon Inventory","License Requirement","Ammo Supply Chain","Police Contract","Gang Contract","Black Market Route","Price Markup","Raid Vulnerability"],
   },
   {
-    id: "j_drugcook", label: "DRUG COOK", color: "#39ff14", x: 7400, y: 2800,
+    id: "j_drugcook",   label: "DRUG COOK",      color: "#39ff14", x: 6800, y: 2100,
     systems: ["Lab Setup Cost","Ingredient Sourcing","Product Quality Tiers","Distribution Network","Police Heat","Cook Time (AFK)","Cartel Tribute","Rival Cook Conflict"],
   },
   {
-    id: "j_police", label: "POLICE OFFICER", color: "#1e90ff", x: 9200, y: 2800,
+    id: "j_police",     label: "POLICE OFFICER", color: "#1e90ff", x: 8200, y: 2100,
     systems: ["Government Salary","Fine Collection","Confiscation Rights","Warrant Execution","Bribery Temptation","Gang Intel","Equipment Loadout","Corruption Risk"],
   },
   {
-    id: "j_mayor", label: "MAYOR", color: "#ffd700", x: 7400, y: 4400,
+    id: "j_mayor",      label: "MAYOR",          color: "#ffd700", x: 6800, y: 3400,
     systems: ["Tax Rate Control","Law Decree","Police Budget","Public Treasury","Corruption Deals","Recall Election","VIP Access","Diplomatic Leverage"],
   },
   {
-    id: "j_mobboss", label: "MOB BOSS", color: "#dc143c", x: 9200, y: 4400,
+    id: "j_mobboss",    label: "MOB BOSS",        color: "#dc143c", x: 8200, y: 3400,
     systems: ["Tribute Network","Territory Map","Soldier Roster","Contract Issuing","Money Laundering","Rival Suppression","Political Influence","Escape Fund"],
   },
   {
-    id: "j_hitman", label: "HITMAN", color: "#ff69b4", x: 7400, y: 6000,
+    id: "j_hitman",     label: "HITMAN",          color: "#ff69b4", x: 6800, y: 4700,
     systems: ["Contract Board","Advance Deposit","Target Tracking","Disguise Option","Evidence Scrubbing","Reputation Tier","Double Cross Risk","Escape Route"],
   },
   {
-    id: "j_medic", label: "MEDIC", color: "#00ff99", x: 9200, y: 6000,
+    id: "j_medic",      label: "MEDIC",           color: "#00ff99", x: 8200, y: 4700,
     systems: ["Heal Rate","Field Medicine","Drug Treatment","Revive Service","Mobile Clinic","Gang Retainer","Police Medic","Black Market Meds"],
   },
   {
-    id: "j_builder", label: "BUILDER", color: "#ff9500", x: 7400, y: 7600,
+    id: "j_builder",    label: "BUILDER",         color: "#ff9500", x: 6800, y: 6000,
     systems: ["Prop Placement","Commission Jobs","Fortification Work","Blueprint Library","Material Sourcing","Demolition Contract","Hidden Room Design","Defense Consulting"],
   },
   {
-    id: "j_informant", label: "INFORMANT", color: "#ba55d3", x: 9200, y: 7600,
+    id: "j_informant",  label: "INFORMANT",       color: "#ba55d3", x: 8200, y: 6000,
     systems: ["Intel Gathering","Police Channel","Criminal Channel","Double Agent Play","Leak Pricing","Identity Concealment","Burn Risk","Safe House Access"],
   },
 ];
@@ -148,51 +158,46 @@ jobs.forEach(job => {
   ring(nodes, edges, job.id, job.x, job.y, job.systems);
 });
 
-// ── Inter-job relationship edges ──────────────────────────────────────────────
-const jobEdges: [string, string, string][] = [
-  // [from, to, relationship-label-note-optional]
-  ["j_citizen",   "j_gundealer",  "buys weapons"],
-  ["j_citizen",   "j_medic",      "pays for healing"],
-  ["j_gundealer", "j_police",     "legal supply"],
-  ["j_gundealer", "j_mobboss",    "illegal bulk"],
-  ["j_gundealer", "j_hitman",     "contract supply"],
-  ["j_drugcook",  "j_mobboss",    "pays tribute"],
-  ["j_drugcook",  "j_informant",  "intel target"],
-  ["j_drugcook",  "j_police",     "police target"],
-  ["j_police",    "j_mayor",      "funded by mayor"],
-  ["j_police",    "j_informant",  "buys intel"],
-  ["j_mobboss",   "j_hitman",     "employs hitmen"],
-  ["j_mobboss",   "j_informant",  "buys intel"],
-  ["j_mobboss",   "j_mayor",      "bribes mayor"],
-  ["j_mobboss",   "j_builder",    "builds bases"],
-  ["j_hitman",    "j_informant",  "buys target intel"],
-  ["j_medic",     "j_mobboss",    "gang retainer"],
-  ["j_medic",     "j_police",     "police contract"],
-  ["j_informant", "j_police",     "sells to police"],
-  ["j_informant", "j_mobboss",    "sells to mob"],
-  ["j_builder",   "j_citizen",    "builds for citizens"],
-  ["j_mayor",     "j_police",     "commands police"],
-  ["j_mayor",     "j_citizen",    "taxes citizens"],
-];
+// Inter-job relationship edges
+[
+  ["j_citizen",  "j_gundealer"],
+  ["j_citizen",  "j_medic"],
+  ["j_gundealer","j_police"],
+  ["j_gundealer","j_mobboss"],
+  ["j_gundealer","j_hitman"],
+  ["j_drugcook", "j_mobboss"],
+  ["j_drugcook", "j_informant"],
+  ["j_drugcook", "j_police"],
+  ["j_police",   "j_mayor"],
+  ["j_police",   "j_informant"],
+  ["j_mobboss",  "j_hitman"],
+  ["j_mobboss",  "j_informant"],
+  ["j_mobboss",  "j_mayor"],
+  ["j_mobboss",  "j_builder"],
+  ["j_hitman",   "j_informant"],
+  ["j_medic",    "j_mobboss"],
+  ["j_medic",    "j_police"],
+  ["j_informant","j_police"],
+  ["j_informant","j_mobboss"],
+  ["j_builder",  "j_citizen"],
+  ["j_mayor",    "j_police"],
+  ["j_mayor",    "j_citizen"],
+].forEach(([f, t]) => edges.push({ id: `ej_${f}_${t}`, from: f, to: t }));
 
-jobEdges.forEach(([f, t]) =>
-  edges.push({ id: `ej_${f}_${t}`, from: f, to: t })
-);
-
-// ── Cross-section bridges: connect jobs to main systems map ──────────────────
-edges.push({ id: "bridge_mayor_gov",    from: "j_mayor",    to: "c4"  });  // Mayor -> GOVERNMENT SYSTEMS
-edges.push({ id: "bridge_police_gov",   from: "j_police",   to: "c4"  });  // Police -> GOVERNMENT SYSTEMS
-edges.push({ id: "bridge_mob_crim",     from: "j_mobboss",  to: "c5"  });  // Mob Boss -> CRIMINAL SYSTEMS
-edges.push({ id: "bridge_cook_econ",    from: "j_drugcook", to: "c2"  });  // Drug Cook -> ECONOMY
-edges.push({ id: "bridge_gundealer_c6", from: "j_gundealer","to": "c6" });  // Gun Dealer -> MERCHANT SYSTEMS
-edges.push({ id: "bridge_hitman_wf",    from: "j_hitman",   to: "wf_hub" }); // Hitman -> WEALTH FLOW
+// Cross-section bridges to systems map
+edges.push({ id: "bridge_mayor_gov",    from: "j_mayor",    to: "c4"    });
+edges.push({ id: "bridge_police_gov",   from: "j_police",   to: "c4"    });
+edges.push({ id: "bridge_mob_crim",     from: "j_mobboss",  to: "c5"    });
+edges.push({ id: "bridge_cook_econ",    from: "j_drugcook", to: "c2"    });
+edges.push({ id: "bridge_gundealer_c6", from: "j_gundealer",to: "c6"    });
+edges.push({ id: "bridge_hitman_wf",    from: "j_hitman",   to: "wf_hub"});
 
 
-// ─── Viewport — zoomed out to show both maps together ───────────────────────
-// Combined bounds: x 400-9700, y 100-8400  =>  center (5050, 4250)
-// At zoom 0.1: vx = 640 - 5050*0.1 = 135 | vy = 340 - 4250*0.1 = -85
+// ─── Viewport ─────────────────────────────────────────────────────────────────
+// Combined bounds: x 400–8900  y 100–6700  =>  center (4650, 3400)
+// At zoom 0.15: vx = 640 - 4650*0.15 ≈ -57 | vy = 340 - 3400*0.15 ≈ -170
 export const initialGraphState: GraphState = {
   nodes,
   edges,
-  viewport: { x: 135, y: -85, zoom: 0.1 }
+  viewport: { x: -57, y: -140, zoom: 0.15 }
 };

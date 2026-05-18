@@ -2,7 +2,7 @@ import { useReducer, useEffect } from 'react';
 import { GraphState, GraphAction } from './types';
 import { initialGraphState } from './initial-data';
 
-const STORAGE_KEY = 'sbox-darkrp-map-v5';
+const STORAGE_KEY = 'sbox-darkrp-map-v6';
 
 function graphReducer(state: GraphState, action: GraphAction): GraphState {
   switch (action.type) {
