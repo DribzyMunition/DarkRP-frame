@@ -1,14 +1,16 @@
 import { GraphState, GraphAction, GraphNode } from "@/lib/types";
+import { useLocation } from "wouter";
 
-export function Toolbar({ 
-  state, 
-  dispatch, 
-  onSave 
-}: { 
-  state: GraphState, 
+export function Toolbar({
+  state,
+  dispatch,
+  onSave
+}: {
+  state: GraphState,
   dispatch: React.Dispatch<GraphAction>,
-  onSave: () => void 
+  onSave: () => void
 }) {
+  const [location, navigate] = useLocation();
   const handleNewNode = () => {
     const id = `sys_${Date.now()}`;
     const x = -state.viewport.x / state.viewport.zoom + window.innerWidth / 2 / state.viewport.zoom;
@@ -89,17 +91,38 @@ export function Toolbar({
     el.click();
   };
 
+  const tabs = [
+    { label: "SYSTEMS MAP", path: "/" },
+    { label: "JOB MAP", path: "/jobs" },
+  ];
+
   return (
-    <div className="fixed top-0 left-0 right-0 h-10 bg-black border-b border-white border-opacity-30 flex items-center px-4 gap-2 z-50 overflow-x-auto text-sm">
-      <div className="font-bold text-green-500 mr-4 tracking-widest whitespace-nowrap">S&BOX_ARCHITECT</div>
-      <button onClick={handleNewNode} className="px-2 py-1 border border-white border-opacity-30 hover:bg-white hover:text-black whitespace-nowrap transition-colors">[NEW NODE]</button>
-      <button onClick={handleNewCategory} className="px-2 py-1 border border-white border-opacity-30 hover:bg-white hover:text-black whitespace-nowrap transition-colors">[NEW CATEGORY]</button>
-      <button onClick={onSave} className="px-2 py-1 border border-white border-opacity-30 hover:bg-white hover:text-black whitespace-nowrap transition-colors">[SAVE]</button>
-      <button onClick={loadData} className="px-2 py-1 border border-white border-opacity-30 hover:bg-white hover:text-black whitespace-nowrap transition-colors">[LOAD]</button>
-      <button onClick={handleClear} className="px-2 py-1 border border-red-500 border-opacity-50 text-red-400 hover:bg-red-500 hover:text-black whitespace-nowrap transition-colors">[CLEAR]</button>
-      <div className="flex-1"></div>
-      <button onClick={handleExport} className="px-2 py-1 border border-white border-opacity-30 hover:bg-white hover:text-black whitespace-nowrap transition-colors">[EXPORT JSON]</button>
-      <button onClick={handleZoomFit} className="px-2 py-1 border border-white border-opacity-30 hover:bg-white hover:text-black whitespace-nowrap transition-colors">[ZOOM FIT]</button>
+    <div className="fixed top-0 left-0 right-0 h-10 bg-[#091018] border-b border-blue-500/20 flex items-center z-50 overflow-x-auto text-sm">
+      <div className="font-bold text-blue-400 px-4 tracking-widest whitespace-nowrap border-r border-blue-500/20 h-full flex items-center">
+        S&amp;BOX
+      </div>
+      {tabs.map(tab => (
+        <button
+          key={tab.path}
+          onClick={() => navigate(tab.path)}
+          className={`px-4 h-full text-xs tracking-widest whitespace-nowrap border-r border-blue-500/20 transition-colors ${
+            location === tab.path
+              ? "text-blue-300 bg-blue-500/15"
+              : "text-slate-400 hover:text-blue-300 hover:bg-blue-500/10"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+      <div className="w-px h-full border-r border-blue-500/20 mx-1" />
+      <button onClick={handleNewNode} className="px-2 py-1 mx-1 border border-blue-500/30 text-slate-300 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors">[NEW NODE]</button>
+      <button onClick={handleNewCategory} className="px-2 py-1 mx-1 border border-blue-500/30 text-slate-300 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors">[NEW CATEGORY]</button>
+      <button onClick={onSave} className="px-2 py-1 mx-1 border border-blue-500/30 text-slate-300 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors">[SAVE]</button>
+      <button onClick={loadData} className="px-2 py-1 mx-1 border border-blue-500/30 text-slate-300 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors">[LOAD]</button>
+      <button onClick={handleClear} className="px-2 py-1 mx-1 border border-red-500/40 text-red-400 hover:bg-red-500/20 whitespace-nowrap transition-colors">[CLEAR]</button>
+      <div className="flex-1" />
+      <button onClick={handleExport} className="px-2 py-1 mx-1 border border-blue-500/30 text-slate-300 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors">[EXPORT JSON]</button>
+      <button onClick={handleZoomFit} className="px-2 py-1 mx-1 mr-3 border border-blue-500/30 text-slate-300 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors">[ZOOM FIT]</button>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { Toolbar } from "@/components/Toolbar";
 import { MiniMap } from "@/components/MiniMap";
 import { ZoomHUD } from "@/components/ZoomHUD";
 import { ShortcutsPanel } from "@/components/ShortcutsPanel";
-import { NavTabs } from "@/components/NavTabs";
 import { useState } from "react";
 
 const STORAGE_KEY = "sbox-darkrp-jobmap-v1";
@@ -21,8 +20,7 @@ export default function JobMap() {
   };
 
   return (
-    <div className="w-full h-screen relative bg-black text-white font-mono overflow-hidden">
-      <NavTabs />
+    <div className="w-full h-screen relative bg-[#0d1623] text-slate-100 font-mono overflow-hidden">
       <Toolbar state={state} dispatch={dispatch} onSave={handleManualSave} />
       <Canvas state={state} dispatch={dispatch} />
       <MiniMap state={state} />

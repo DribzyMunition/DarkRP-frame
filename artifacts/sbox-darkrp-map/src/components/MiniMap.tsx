@@ -28,7 +28,7 @@ export function MiniMap({ state }: { state: GraphState }) {
   const vy = -state.viewport.y / state.viewport.zoom;
 
   return (
-    <div className="fixed bottom-4 left-4 w-[200px] h-[150px] bg-black border border-white border-opacity-30 z-40 overflow-hidden pointer-events-none opacity-80">
+    <div className="fixed bottom-4 left-4 w-[200px] h-[150px] bg-[#091018] border border-blue-500/30 z-40 overflow-hidden pointer-events-none opacity-80">
       {state.nodes.map(n => (
         <div
           key={n.id}
@@ -44,7 +44,7 @@ export function MiniMap({ state }: { state: GraphState }) {
         />
       ))}
       <div 
-        className="absolute border border-green-500 bg-green-500 bg-opacity-10"
+        className="absolute border border-blue-400 bg-blue-400/10"
         style={{
           left: (vx + offsetX) * scale,
           top: (vy + offsetY) * scale,

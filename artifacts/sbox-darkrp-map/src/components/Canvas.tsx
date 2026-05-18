@@ -217,10 +217,10 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
         <svg className="absolute overflow-visible" style={{ zIndex: 1 }}>
           <defs>
             <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.6)" />
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(96,165,250,0.6)" />
             </marker>
             <marker id="arrow-selected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#00ff41" />
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#60a5fa" />
             </marker>
           </defs>
           {visibleEdges.map(edge => {
@@ -237,7 +237,7 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
                 y1={from.y}
                 x2={to.x}
                 y2={to.y}
-                stroke={isSelected ? "#00ff41" : "rgba(255,255,255,0.6)"}
+                stroke={isSelected ? "#60a5fa" : "rgba(96,165,250,0.4)"}
                 strokeWidth={isSelected ? 2 : 1}
                 markerEnd={`url(#${isSelected ? 'arrow-selected' : 'arrow'})`}
                 className="pointer-events-auto cursor-pointer transition-colors"
@@ -252,7 +252,7 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
               y1={state.nodes.find(n => n.id === connectingFrom)?.y || 0}
               x2={screenToWorld(mousePos.x, mousePos.y).x}
               y2={screenToWorld(mousePos.x, mousePos.y).y}
-              stroke="#00ff41"
+              stroke="#60a5fa"
               strokeWidth={1}
               strokeDasharray="4 4"
             />
@@ -267,7 +267,7 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
             top: 1550,
             fontSize: 320,
             lineHeight: 1,
-            color: '#ffffff',
+            color: '#60a5fa',
             opacity: state.viewport.zoom < 0.34
               ? Math.max(0, 0.55 * (1 - state.viewport.zoom / 0.34))
               : 0,
@@ -309,7 +309,7 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
               <input
                 ref={editInputRef}
                 autoFocus
-                className="bg-black border border-green-500 text-white p-1 font-mono text-center outline-none"
+                className="bg-[#0d1623] border border-blue-400 text-blue-100 p-1 font-mono text-center outline-none"
                 defaultValue={state.nodes.find(n => n.id === editingNode)?.label}
                 onKeyDown={(e) => handleLabelChange(e, editingNode)}
                 onBlur={(e) => {
@@ -324,13 +324,13 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
 
       {contextMenu && (
         <div 
-          className="fixed bg-black border border-white p-1 flex flex-col z-50 shadow-2xl text-sm"
+          className="fixed bg-[#091018] border border-blue-500/40 p-1 flex flex-col z-50 shadow-2xl text-sm"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           {contextMenu.nodeId ? (
             <>
               <button 
-                className="px-4 py-1 text-left hover:bg-white hover:text-black whitespace-nowrap"
+                className="px-4 py-1 text-left text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap"
                 onClick={() => {
                   const node = state.nodes.find(n => n.id === contextMenu.nodeId);
                   if (node) {
@@ -345,7 +345,7 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
                 Add child node
               </button>
               <button 
-                className="px-4 py-1 text-left hover:bg-red-500 hover:text-black text-red-400 whitespace-nowrap"
+                className="px-4 py-1 text-left hover:bg-red-500/20 text-red-400 whitespace-nowrap"
                 onClick={() => {
                   dispatch({ type: 'DELETE_NODE', payload: contextMenu.nodeId! });
                   setContextMenu(null);
@@ -356,7 +356,7 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
             </>
           ) : (
             <button 
-                className="px-4 py-1 text-left hover:bg-white hover:text-black whitespace-nowrap"
+                className="px-4 py-1 text-left text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap"
                 onClick={() => {
                   const worldPos = screenToWorld(contextMenu.x, contextMenu.y);
                   dispatch({
