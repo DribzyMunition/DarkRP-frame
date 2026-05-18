@@ -9,7 +9,7 @@ import { MapSwitcher } from "@/components/MapSwitcher";
 import { NodePad } from "@/components/NodePad";
 import { useState } from "react";
 
-const STORAGE_KEY = "sbox-darkrp-jobmap-v1";
+const STORAGE_KEY = "sbox-darkrp-jobmap-v2";
 
 export default function JobMap() {
   const { state, dispatch } = useGraphStore(STORAGE_KEY, initialJobsState);
