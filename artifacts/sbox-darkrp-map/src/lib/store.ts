@@ -1,8 +1,5 @@
 import { useReducer, useEffect } from 'react';
 import { GraphState, GraphAction } from './types';
-import { initialGraphState } from './initial-data';
-
-const STORAGE_KEY = 'sbox-darkrp-map-v6';
 
 function graphReducer(state: GraphState, action: GraphAction): GraphState {
   switch (action.type) {
@@ -41,25 +38,25 @@ function graphReducer(state: GraphState, action: GraphAction): GraphState {
   }
 }
 
-export function useGraphStore() {
+export function useGraphStore(storageKey: string, initialState: GraphState) {
   const [state, dispatch] = useReducer(graphReducer, null as any, () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         return JSON.parse(stored);
       }
     } catch (e) {
       console.error("Failed to load map state", e);
     }
-    return initialGraphState;
+    return initialState;
   });
 
   useEffect(() => {
     const t = setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(storageKey, JSON.stringify(state));
     }, 500);
     return () => clearTimeout(t);
-  }, [state]);
+  }, [state, storageKey]);
 
   return { state, dispatch };
 }

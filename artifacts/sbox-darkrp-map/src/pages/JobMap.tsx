@@ -1,5 +1,5 @@
 import { useGraphStore } from "@/lib/store";
-import { initialSystemsState } from "@/lib/initial-data-systems";
+import { initialJobsState } from "@/lib/initial-data-jobs";
 import { Canvas } from "@/components/Canvas";
 import { Toolbar } from "@/components/Toolbar";
 import { MiniMap } from "@/components/MiniMap";
@@ -8,10 +8,10 @@ import { ShortcutsPanel } from "@/components/ShortcutsPanel";
 import { NavTabs } from "@/components/NavTabs";
 import { useState } from "react";
 
-const STORAGE_KEY = "sbox-darkrp-systems-v1";
+const STORAGE_KEY = "sbox-darkrp-jobmap-v1";
 
-export default function MapEditor() {
-  const { state, dispatch } = useGraphStore(STORAGE_KEY, initialSystemsState);
+export default function JobMap() {
+  const { state, dispatch } = useGraphStore(STORAGE_KEY, initialJobsState);
   const [saveFlash, setSaveFlash] = useState(false);
 
   const handleManualSave = () => {
@@ -28,7 +28,7 @@ export default function MapEditor() {
       <MiniMap state={state} />
       <ZoomHUD state={state} dispatch={dispatch} />
       <ShortcutsPanel />
-      
+
       {saveFlash && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 bg-green-500 text-black px-4 py-1 font-bold z-50 transition-opacity">
           [SAVED]
