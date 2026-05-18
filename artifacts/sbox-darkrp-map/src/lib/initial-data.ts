@@ -188,9 +188,11 @@ edges.push({ id: "bridge_gundealer_c6", from: "j_gundealer","to": "c6" });  // G
 edges.push({ id: "bridge_hitman_wf",    from: "j_hitman",   to: "wf_hub" }); // Hitman -> WEALTH FLOW
 
 
-// ─── Viewport — centered on systems map ─────────────────────────────────────
+// ─── Viewport — zoomed out to show both maps together ───────────────────────
+// Combined bounds: x 400-9700, y 100-8400  =>  center (5050, 4250)
+// At zoom 0.1: vx = 640 - 5050*0.1 = 135 | vy = 340 - 4250*0.1 = -85
 export const initialGraphState: GraphState = {
   nodes,
   edges,
-  viewport: { x: -122, y: -100, zoom: 0.25 }
+  viewport: { x: 135, y: -85, zoom: 0.1 }
 };

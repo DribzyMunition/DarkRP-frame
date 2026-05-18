@@ -268,8 +268,8 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
             fontSize: 320,
             lineHeight: 1,
             color: '#ffffff',
-            opacity: state.viewport.zoom < 0.35
-              ? Math.max(0, 0.07 * (1 - state.viewport.zoom / 0.35))
+            opacity: state.viewport.zoom < 0.34
+              ? Math.max(0, 0.55 * (1 - state.viewport.zoom / 0.34))
               : 0,
             fontFamily: '"JetBrains Mono", monospace',
             fontWeight: 700,
