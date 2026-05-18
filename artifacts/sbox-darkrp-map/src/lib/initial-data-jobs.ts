@@ -7,7 +7,7 @@ function ring(
   cx: number,
   cy: number,
   labels: string[],
-  radius = 280
+  radius = 220
 ) {
   const step = (2 * Math.PI) / labels.length;
   labels.forEach((label, i) => {
@@ -26,47 +26,94 @@ function ring(
 const nodes: GraphNode[] = [];
 const edges: GraphEdge[] = [];
 
-// 2-column layout: col A = x:1400, col B = x:2800 | rows spaced 1300 apart
+//
+//  Layout — reads left=law, right=criminal, center=neutral/supply
+//
+//                    MAYOR  (2000, 350)
+//                  /               \
+//        POLICE (650, 1050)      MOB BOSS (3350, 1050)
+//          |   \                 /   |
+//       CITIZEN  \  INFORMANT  /  DRUG COOK
+//      (200,1950)  \  (2000,1650)  / (3800,1950)
+//                   \            /
+//                   GUN DEALER (2000,2650)  ← supply hub
+//                   /       \
+//              HITMAN        MEDIC
+//             (900,3400)   (3100,3400)
+//                   \        /
+//                   BUILDER (2000,4000)
+//
+
 const jobs = [
   {
-    id: "j_citizen",    label: "CITIZEN",        color: "#d4d4d4", x: 1400, y: 800,
-    systems: ["Basic Wage","Property Rental","Mugging Target","Voting Rights","Business Patron","Freelance Work","Witness Role","Self Defense"],
+    id: "j_mayor",
+    label: "MAYOR",
+    color: "#ffd700",
+    x: 2000, y: 350,
+    systems: ["Set Tax Rate", "Pass Laws", "Fund Police", "Take Bribes"],
   },
   {
-    id: "j_gundealer",  label: "GUN DEALER",     color: "#ff8c00", x: 2800, y: 800,
-    systems: ["Weapon Inventory","License Requirement","Ammo Supply Chain","Police Contract","Gang Contract","Black Market Route","Price Markup","Raid Vulnerability"],
+    id: "j_police",
+    label: "POLICE",
+    color: "#1e90ff",
+    x: 650, y: 1050,
+    systems: ["Arrest Criminals", "Issue Warrants", "Collect Fines", "Enforce Laws"],
   },
   {
-    id: "j_drugcook",   label: "DRUG COOK",      color: "#39ff14", x: 1400, y: 2100,
-    systems: ["Lab Setup Cost","Ingredient Sourcing","Product Quality Tiers","Distribution Network","Police Heat","Cook Time (AFK)","Cartel Tribute","Rival Cook Conflict"],
+    id: "j_mobboss",
+    label: "MOB BOSS",
+    color: "#dc143c",
+    x: 3350, y: 1050,
+    systems: ["Control Territory", "Issue Contracts", "Collect Tribute", "Launder Money"],
   },
   {
-    id: "j_police",     label: "POLICE OFFICER", color: "#1e90ff", x: 2800, y: 2100,
-    systems: ["Government Salary","Fine Collection","Confiscation Rights","Warrant Execution","Bribery Temptation","Gang Intel","Equipment Loadout","Corruption Risk"],
+    id: "j_citizen",
+    label: "CITIZEN",
+    color: "#d4d4d4",
+    x: 200, y: 1950,
+    systems: ["Pay Taxes", "Own Property", "Vote", "Get Mugged"],
   },
   {
-    id: "j_mayor",      label: "MAYOR",          color: "#ffd700", x: 1400, y: 3400,
-    systems: ["Tax Rate Control","Law Decree","Police Budget","Public Treasury","Corruption Deals","Recall Election","VIP Access","Diplomatic Leverage"],
+    id: "j_informant",
+    label: "INFORMANT",
+    color: "#ba55d3",
+    x: 2000, y: 1650,
+    systems: ["Gather Intel", "Sell to Police", "Sell to Criminals", "Stay Hidden"],
   },
   {
-    id: "j_mobboss",    label: "MOB BOSS",        color: "#dc143c", x: 2800, y: 3400,
-    systems: ["Tribute Network","Territory Map","Soldier Roster","Contract Issuing","Money Laundering","Rival Suppression","Political Influence","Escape Fund"],
+    id: "j_drugcook",
+    label: "DRUG COOK",
+    color: "#39ff14",
+    x: 3800, y: 1950,
+    systems: ["Run Lab", "Sell Product", "Evade Police", "Pay Tribute"],
   },
   {
-    id: "j_hitman",     label: "HITMAN",          color: "#ff69b4", x: 1400, y: 4700,
-    systems: ["Contract Board","Advance Deposit","Target Tracking","Disguise Option","Evidence Scrubbing","Reputation Tier","Double Cross Risk","Escape Route"],
+    id: "j_gundealer",
+    label: "GUN DEALER",
+    color: "#ff8c00",
+    x: 2000, y: 2650,
+    systems: ["Sell Weapons", "Set Prices", "Legal Sales", "Black Market Sales"],
   },
   {
-    id: "j_medic",      label: "MEDIC",           color: "#00ff99", x: 2800, y: 4700,
-    systems: ["Heal Rate","Field Medicine","Drug Treatment","Revive Service","Mobile Clinic","Gang Retainer","Police Medic","Black Market Meds"],
+    id: "j_hitman",
+    label: "HITMAN",
+    color: "#ff69b4",
+    x: 900, y: 3400,
+    systems: ["Take Contracts", "Track Targets", "Eliminate Target", "Collect Payment"],
   },
   {
-    id: "j_builder",    label: "BUILDER",         color: "#ff9500", x: 1400, y: 6000,
-    systems: ["Prop Placement","Commission Jobs","Fortification Work","Blueprint Library","Material Sourcing","Demolition Contract","Hidden Room Design","Defense Consulting"],
+    id: "j_medic",
+    label: "MEDIC",
+    color: "#00ff99",
+    x: 3100, y: 3400,
+    systems: ["Heal Players", "Revive Downed", "Sell Meds", "Field Support"],
   },
   {
-    id: "j_informant",  label: "INFORMANT",       color: "#ba55d3", x: 2800, y: 6000,
-    systems: ["Intel Gathering","Police Channel","Criminal Channel","Double Agent Play","Leak Pricing","Identity Concealment","Burn Risk","Safe House Access"],
+    id: "j_builder",
+    label: "BUILDER",
+    color: "#ff9500",
+    x: 2000, y: 4100,
+    systems: ["Build Bases", "Fortify Properties", "Take Commissions", "Design Hideouts"],
   },
 ];
 
@@ -75,33 +122,51 @@ jobs.forEach(job => {
   ring(nodes, edges, job.id, job.x, job.y, job.systems);
 });
 
+// ─── Relationship edges ────────────────────────────────────────────────────────
+// Mayor bridges both sides
 [
-  ["j_citizen",  "j_gundealer"],
-  ["j_citizen",  "j_medic"],
-  ["j_gundealer","j_police"],
-  ["j_gundealer","j_mobboss"],
-  ["j_gundealer","j_hitman"],
-  ["j_drugcook", "j_mobboss"],
-  ["j_drugcook", "j_informant"],
-  ["j_drugcook", "j_police"],
-  ["j_police",   "j_mayor"],
-  ["j_police",   "j_informant"],
-  ["j_mobboss",  "j_hitman"],
-  ["j_mobboss",  "j_informant"],
-  ["j_mobboss",  "j_mayor"],
-  ["j_mobboss",  "j_builder"],
-  ["j_hitman",   "j_informant"],
-  ["j_medic",    "j_mobboss"],
-  ["j_medic",    "j_police"],
-  ["j_informant","j_police"],
-  ["j_informant","j_mobboss"],
-  ["j_builder",  "j_citizen"],
-  ["j_mayor",    "j_police"],
-  ["j_mayor",    "j_citizen"],
+  ["j_mayor",     "j_police"],     // commands police
+  ["j_mayor",     "j_mobboss"],    // corrupted by / pressures mob
+  ["j_mayor",     "j_citizen"],    // taxes & voting
+
+  // Law side
+  ["j_police",    "j_drugcook"],   // enforcement target
+  ["j_police",    "j_informant"],  // buys intel
+  ["j_police",    "j_citizen"],    // protects citizens
+  ["j_police",    "j_mobboss"],    // direct conflict
+
+  // Criminal side
+  ["j_mobboss",   "j_drugcook"],   // tribute / supply control
+  ["j_mobboss",   "j_hitman"],     // issues kill contracts
+  ["j_mobboss",   "j_informant"],  // buys intel / has informants
+  ["j_drugcook",  "j_informant"],  // tipped off / protected by
+
+  // Gun Dealer — central supply hub (no mayor, no medic)
+  ["j_gundealer", "j_police"],     // legal sales
+  ["j_gundealer", "j_mobboss"],    // criminal sales
+  ["j_gundealer", "j_hitman"],     // assassination tools
+  ["j_gundealer", "j_drugcook"],   // lab protection
+  ["j_gundealer", "j_builder"],    // equipment for base builds
+
+  // Hitman
+  ["j_hitman",    "j_informant"],  // needs target info
+
+  // Medic — neutral, serves both sides
+  ["j_medic",     "j_police"],     // law enforcement support
+  ["j_medic",     "j_mobboss"],    // gang retainer
+
+  // Builder — neutral construction
+  ["j_builder",   "j_mobboss"],    // builds criminal hideouts
+  ["j_builder",   "j_citizen"],    // builds civilian properties
 ].forEach(([f, t]) => edges.push({ id: `ej_${f}_${t}`, from: f, to: t }));
+
+// ─── Axis labels ──────────────────────────────────────────────────────────────
+nodes.push({ id: "lbl_law",      type: "NOTE", label: "← LAW",            x: -300,  y: 1050 });
+nodes.push({ id: "lbl_crim",     type: "NOTE", label: "CRIMINAL →",        x: 4400,  y: 1050 });
+nodes.push({ id: "lbl_supply",   type: "NOTE", label: "SUPPLY HUB — most factions require weapons", x: 2000, y: 3000 });
 
 export const initialJobsState: GraphState = {
   nodes,
   edges,
-  viewport: { x: -50, y: -100, zoom: 0.13 },
+  viewport: { x: 370, y: 80, zoom: 0.14 },
 };
