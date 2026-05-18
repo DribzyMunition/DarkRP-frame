@@ -34,7 +34,7 @@ categories.forEach(cat => {
 
   const angleStep = (2 * Math.PI) / cat.systems.length;
   cat.systems.forEach((sys, i) => {
-    const r = 250 + Math.random() * 100;
+    const r = 250 + (i % 3) * 60;
     const angle = i * angleStep;
     const sysId = `s_${cat.id}_${i}`;
     nodes.push({
@@ -53,24 +53,75 @@ categories.forEach(cat => {
   });
 });
 
+// ─── WEALTH FLOW: central mega-hub ──────────────────────────────────────────
+// Positioned at the gravitational center between ECONOMY, CRIMINAL SYSTEMS,
+// CORE GAMEPLAY LOOP — acts as the second major axis of the whole map.
+const WF_X = 3400;
+const WF_Y = 2300;
+const WF_RADIUS = 340;
+
+nodes.push({
+  id: "wf_hub",
+  type: "CATEGORY",
+  label: "WEALTH FLOW",
+  x: WF_X,
+  y: WF_Y,
+  color: "#ff9500",
+  collapsed: false
+});
+
+const wfSpokes = [
+  { id: "wf_creation",     label: "CREATION",     angle: 0 },
+  { id: "wf_storage",      label: "STORAGE",      angle: Math.PI * 0.25 },
+  { id: "wf_risk",         label: "RISK",         angle: Math.PI * 0.5 },
+  { id: "wf_laundering",   label: "LAUNDERING",   angle: Math.PI * 0.75 },
+  { id: "wf_taxation",     label: "TAXATION",     angle: Math.PI },
+  { id: "wf_robbery",      label: "ROBBERY",      angle: Math.PI * 1.25 },
+  { id: "wf_deathloss",    label: "DEATH LOSS",   angle: Math.PI * 1.5 },
+  { id: "wf_weaponization",label: "WEAPONIZATION",angle: Math.PI * 1.75 },
+];
+
+wfSpokes.forEach(({ id, label, angle }) => {
+  nodes.push({
+    id,
+    type: "SYSTEM",
+    label,
+    x: WF_X + Math.cos(angle) * WF_RADIUS,
+    y: WF_Y + Math.sin(angle) * WF_RADIUS,
+    parentId: "wf_hub"
+  });
+  edges.push({ id: `e_wf_${id}`, from: "wf_hub", to: id });
+});
+
+// Connect WEALTH FLOW hub to the relevant category nodes
+const wfCatLinks: [string, string][] = [
+  ["c1",    "wf_hub"],   // CORE GAMEPLAY LOOP -> WEALTH FLOW
+  ["wf_hub","c2"],       // WEALTH FLOW -> ECONOMY
+  ["wf_hub","c4"],       // WEALTH FLOW -> GOVERNMENT SYSTEMS (taxation)
+  ["wf_hub","c5"],       // WEALTH FLOW -> CRIMINAL SYSTEMS (laundering, robbery)
+  ["wf_hub","c9"],       // WEALTH FLOW -> COMBAT AND RAIDING (weaponization)
+  ["wf_hub","c11"],      // WEALTH FLOW -> WEALTH CREATION (creation)
+];
+
+wfCatLinks.forEach(([from, to]) => {
+  edges.push({ id: `e_${from}_${to}_wf`, from, to });
+});
+
+// ─── NOTE nodes ─────────────────────────────────────────────────────────────
 const noteNodes = [
   { id: "n1", label: "Crime Loop: Drug Cooks -> Black Market -> Gun Dealers -> Raiders -> Police Response", x: 4400, y: 3300 },
   { id: "n2", label: "Political Loop: Mayor sets taxes -> Citizens revolt -> Gang fills power vacuum", x: 4500, y: 1300 },
   { id: "n3", label: "Wealth Loop: Rich players become targets -> Hire hitmen -> Create bounty economy", x: 2600, y: 4000 },
-  { id: "n4", label: "Onboarding Loop: New players -> Merchant income -> Stability -> Retention", x: 1000, y: 2800 }
+  { id: "n4", label: "Onboarding Loop: New players -> Merchant income -> Stability -> Retention", x: 1000, y: 2800 },
+  { id: "n5", label: "Wealth Flow Hub: Money is created, stored, taxed, stolen, laundered, weaponized, and lost on death — the complete lifecycle.", x: 3400, y: 2900 }
 ];
 
 noteNodes.forEach(n => {
-  nodes.push({
-    id: n.id,
-    type: "NOTE",
-    label: n.label,
-    x: n.x,
-    y: n.y
-  });
+  nodes.push({ id: n.id, type: "NOTE", label: n.label, x: n.x, y: n.y });
 });
 
-const catEdges = [
+// ─── Category-to-category edges ──────────────────────────────────────────────
+const catEdges: [string, string][] = [
   ["c1", "c2"],
   ["c1", "c3"],
   ["c1", "c9"],
@@ -95,17 +146,11 @@ const catEdges = [
 ];
 
 catEdges.forEach(([from, to]) => {
-  edges.push({
-    id: `e_${from}_${to}`,
-    from,
-    to
-  });
+  edges.push({ id: `e_${from}_${to}`, from, to });
 });
 
-// Center the map in a ~1280x720 viewport at zoom 0.25
-// Map spans x: 600-5500, y: 200-3800 => center ~(3050, 2000)
-// viewport.x = screenW/2 - centerX * zoom = 640 - 3050*0.25 = 640 - 762 = -122
-// viewport.y = screenH/2 - centerY * zoom = 360 - 2000*0.25 = 360 - 500 = -140
+// Center viewport on the full map
+// Map spans x: 600-5500, y: 200-4000 => center ~(3050, 2100)
 export const initialGraphState: GraphState = {
   nodes,
   edges,
