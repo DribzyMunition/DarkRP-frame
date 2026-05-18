@@ -5,6 +5,8 @@ import { Toolbar } from "@/components/Toolbar";
 import { MiniMap } from "@/components/MiniMap";
 import { ZoomHUD } from "@/components/ZoomHUD";
 import { ShortcutsPanel } from "@/components/ShortcutsPanel";
+import { MapSwitcher } from "@/components/MapSwitcher";
+import { NodePad } from "@/components/NodePad";
 import { useState } from "react";
 
 const STORAGE_KEY = "sbox-darkrp-systems-v1";
@@ -26,6 +28,8 @@ export default function MapEditor() {
       <MiniMap state={state} />
       <ZoomHUD state={state} dispatch={dispatch} />
       <ShortcutsPanel />
+      <NodePad state={state} dispatch={dispatch} />
+      <MapSwitcher />
       
       {saveFlash && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 bg-green-500 text-black px-4 py-1 font-bold z-50 transition-opacity">
