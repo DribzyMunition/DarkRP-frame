@@ -259,6 +259,30 @@ export function Canvas({ state, dispatch }: { state: GraphState, dispatch: React
           )}
         </svg>
 
+        {/* DARK RP STRUCTURE watermark — fades out as zoom exceeds 0.35 */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 800,
+            top: 1550,
+            fontSize: 320,
+            lineHeight: 1,
+            color: '#ffffff',
+            opacity: state.viewport.zoom < 0.35
+              ? Math.max(0, 0.07 * (1 - state.viewport.zoom / 0.35))
+              : 0,
+            fontFamily: '"JetBrains Mono", monospace',
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            whiteSpace: 'nowrap',
+            zIndex: 0,
+          }}
+        >
+          DARK RP STRUCTURE
+        </div>
+
         <div className="absolute pointer-events-auto" style={{ zIndex: 2 }}>
           {visibleNodes.map(node => (
             <Node 
