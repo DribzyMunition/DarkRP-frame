@@ -80,7 +80,8 @@ export function Canvas({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 2) return;
     if (contextMenu) setContextMenu(null);
-    if (editingNodeId) onEditingNodeChange(null);
+    // Don't clear editingNodeId here — the input's onBlur handles saving and closing.
+    // Clearing here races with the state update that sets editingNodeId on node creation.
 
     const target = e.target as HTMLElement;
     if (target.closest(".toolbar-container")) return;
@@ -97,7 +98,7 @@ export function Canvas({
     if (e.button === 2) return;
     e.stopPropagation();
     if (contextMenu) setContextMenu(null);
-    if (editingNodeId) onEditingNodeChange(null);
+    // editingNodeId clears via onBlur when focus leaves the input.
 
     if (e.shiftKey) {
       setConnectingFrom(id);
@@ -184,12 +185,7 @@ export function Canvas({
   }, [selectedNode, selectedEdge, editingNodeId, dispatch]);
 
   const handleNodeDoubleClick = (id: string) => {
-    const node = state.nodes.find((n) => n.id === id);
-    if (node?.type === "CATEGORY") {
-      dispatch({ type: "TOGGLE_COLLAPSE", payload: id });
-    } else {
-      onEditingNodeChange(id);
-    }
+    onEditingNodeChange(id);
   };
 
   const handleLabelChange = (e: React.KeyboardEvent<HTMLInputElement>, id: string) => {
@@ -368,24 +364,35 @@ export function Canvas({
           {contextMenu.nodeId ? (
             <>
               {contextNode?.type === "CATEGORY" && (
-                <label
-                  className="flex items-center gap-2 px-4 py-1 text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 cursor-pointer whitespace-nowrap select-none"
-                  title="Change category colour"
-                >
-                  <span
-                    className="w-3 h-3 border border-white/30 flex-shrink-0 transition-colors duration-150"
-                    style={{ background: contextNode.color || "#60a5fa" }}
-                  />
-                  <span>Change color</span>
-                  <input
-                    type="color"
-                    value={contextNode.color || "#60a5fa"}
-                    className="sr-only"
-                    onChange={(e) =>
-                      dispatch({ type: "UPDATE_NODE", payload: { id: contextNode.id, color: e.target.value } })
-                    }
-                  />
-                </label>
+                <>
+                  <button
+                    className="px-4 py-1 text-left text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors"
+                    onClick={() => {
+                      dispatch({ type: "TOGGLE_COLLAPSE", payload: contextNode.id });
+                      setContextMenu(null);
+                    }}
+                  >
+                    {contextNode.collapsed ? "Expand" : "Collapse"}
+                  </button>
+                  <label
+                    className="flex items-center gap-2 px-4 py-1 text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 cursor-pointer whitespace-nowrap select-none"
+                    title="Change category colour"
+                  >
+                    <span
+                      className="w-3 h-3 border border-white/30 flex-shrink-0 transition-colors duration-150"
+                      style={{ background: contextNode.color || "#60a5fa" }}
+                    />
+                    <span>Change color</span>
+                    <input
+                      type="color"
+                      value={contextNode.color || "#60a5fa"}
+                      className="sr-only"
+                      onChange={(e) =>
+                        dispatch({ type: "UPDATE_NODE", payload: { id: contextNode.id, color: e.target.value } })
+                      }
+                    />
+                  </label>
+                </>
               )}
               <button
                 className="px-4 py-1 text-left text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors"
