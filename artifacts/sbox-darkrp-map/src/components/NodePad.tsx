@@ -6,6 +6,7 @@ interface NodePadProps {
   dispatch: React.Dispatch<GraphAction>;
   webColor: string;
   onWebColorChange: (color: string) => void;
+  onNodeCreated: (id: string) => void;
 }
 
 const btn =
@@ -14,7 +15,7 @@ const btn =
   "hover:bg-blue-500/15 hover:border-blue-400/60 hover:text-blue-200 " +
   "active:scale-95 transition-all duration-100 select-none";
 
-export function NodePad({ state, dispatch, webColor, onWebColorChange }: NodePadProps) {
+export function NodePad({ state, dispatch, webColor, onWebColorChange, onNodeCreated }: NodePadProps) {
   const [catColor, setCatColor] = useState("#60a5fa");
   const catColorRef = useRef<HTMLInputElement>(null);
   const webColorRef = useRef<HTMLInputElement>(null);
@@ -25,30 +26,36 @@ export function NodePad({ state, dispatch, webColor, onWebColorChange }: NodePad
     -state.viewport.y / state.viewport.zoom + window.innerHeight / 2 / state.viewport.zoom;
 
   const newCategory = () => {
+    const id = `cat_${Date.now()}`;
     dispatch({
       type: "ADD_NODE",
-      payload: { id: `cat_${Date.now()}`, type: "CATEGORY", label: "NEW CATEGORY", x: centerX(), y: centerY(), color: catColor, collapsed: false },
+      payload: { id, type: "CATEGORY", label: "NEW CATEGORY", x: centerX(), y: centerY(), color: catColor, collapsed: false },
     });
+    onNodeCreated(id);
   };
 
   const newNode = () => {
+    const id = `sys_${Date.now()}`;
     dispatch({
       type: "ADD_NODE",
-      payload: { id: `sys_${Date.now()}`, type: "SYSTEM", label: "NEW NODE", x: centerX(), y: centerY() },
+      payload: { id, type: "SYSTEM", label: "NEW NODE", x: centerX(), y: centerY() },
     });
+    onNodeCreated(id);
   };
 
   const newNote = () => {
+    const id = `note_${Date.now()}`;
     dispatch({
       type: "ADD_NODE",
-      payload: { id: `note_${Date.now()}`, type: "NOTE", label: "New note", x: centerX(), y: centerY() },
+      payload: { id, type: "NOTE", label: "New note", x: centerX(), y: centerY() },
     });
+    onNodeCreated(id);
   };
 
   const zoomFit = () => {
     if (state.nodes.length === 0) return;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    state.nodes.forEach(n => {
+    state.nodes.forEach((n) => {
       if (n.x < minX) minX = n.x;
       if (n.y < minY) minY = n.y;
       if (n.x > maxX) maxX = n.x;
@@ -64,9 +71,7 @@ export function NodePad({ state, dispatch, webColor, onWebColorChange }: NodePad
 
   return (
     <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-1">
-      {/* D-pad */}
       <div className="grid grid-cols-3 gap-0.5">
-        {/* Row 1 */}
         <div />
         <button onClick={newCategory} className={btn} title="New Category">
           <span className="text-base leading-none transition-colors duration-150" style={{ color: catColor }}>⬡</span>
@@ -74,7 +79,6 @@ export function NodePad({ state, dispatch, webColor, onWebColorChange }: NodePad
         </button>
         <div />
 
-        {/* Row 2 */}
         <button onClick={newNode} className={btn} title="New Node">
           <span className="text-blue-300 text-base leading-none">●</span>
           <span>NODE</span>
@@ -87,7 +91,6 @@ export function NodePad({ state, dispatch, webColor, onWebColorChange }: NodePad
           <span>NOTE</span>
         </button>
 
-        {/* Row 3 */}
         <div />
         <button onClick={zoomFit} className={btn} title="Zoom to fit">
           <span className="text-blue-300 text-base leading-none">⊞</span>
@@ -96,7 +99,6 @@ export function NodePad({ state, dispatch, webColor, onWebColorChange }: NodePad
         <div />
       </div>
 
-      {/* Color pickers */}
       <div className="mt-1 w-full flex flex-col gap-0.5">
         <button
           className="w-full flex items-center gap-1.5 px-2 py-1.5 bg-[#091018] border border-blue-500/20 text-[9px] text-slate-500 font-mono tracking-widest hover:border-blue-400/50 hover:text-slate-300 active:scale-95 transition-all duration-100 select-none"

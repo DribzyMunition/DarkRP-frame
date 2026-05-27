@@ -7,7 +7,9 @@ export function Node({
   onDoubleClick,
   onContextMenu,
   selected,
-  childCount
+  childCount,
+  isConnectionSource,
+  isConnectionTarget,
 }: {
   node: GraphNode;
   zoom: number;
@@ -16,21 +18,24 @@ export function Node({
   onContextMenu: (e: React.MouseEvent, id: string) => void;
   selected: boolean;
   childCount: number;
+  isConnectionSource?: boolean;
+  isConnectionTarget?: boolean;
 }) {
   let w = 150;
   let h = 40;
   let border = "1px solid white";
   let bg = "black";
   let textColor = "white";
-  let classes = "flex items-center justify-center text-center p-2 box-border cursor-pointer absolute origin-top-left group transition-colors duration-150";
-  
+  let classes =
+    "flex items-center justify-center text-center p-2 box-border cursor-pointer absolute origin-top-left group transition-all duration-150";
+
   if (node.type === "CATEGORY") {
     w = 250;
     h = 50;
-    border = `1px ${node.collapsed ? 'dashed' : 'solid'} ${node.color || '#fff'}`;
-    textColor = node.color || 'white';
+    border = `1px ${node.collapsed ? "dashed" : "solid"} ${node.color || "#fff"}`;
+    textColor = node.color || "white";
     classes += " font-bold text-lg tracking-wider bg-black";
-    if (node.collapsed) bg = 'rgba(0,0,0,0.8)';
+    if (node.collapsed) bg = "rgba(0,0,0,0.8)";
   } else if (node.type === "NOTE") {
     w = 200;
     h = 80;
@@ -40,8 +45,18 @@ export function Node({
   }
 
   if (selected) {
-    border = `1px solid #00ff41`;
+    border = "1px solid #00ff41";
     classes += " shadow-[0_0_10px_rgba(0,255,65,0.5)]";
+  }
+
+  // Connection states override selection
+  if (isConnectionSource) {
+    border = "2px solid #60a5fa";
+    classes += " shadow-[0_0_16px_rgba(96,165,250,0.8)]";
+  }
+  if (isConnectionTarget) {
+    border = "2px solid #00ff41";
+    classes += " shadow-[0_0_22px_rgba(0,255,65,0.95)] scale-105";
   }
 
   return (
@@ -53,19 +68,20 @@ export function Node({
         border,
         background: bg,
         color: textColor,
-        zIndex: node.type === "CATEGORY" ? 10 : 5
+        zIndex: node.type === "CATEGORY" ? 10 : 5,
       }}
       className={classes}
       onMouseDown={(e) => onMouseDown(e, node.id)}
-      onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(node.id); }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        onDoubleClick(node.id);
+      }}
       onContextMenu={(e) => onContextMenu(e, node.id)}
     >
       <div className="select-none pointer-events-none line-clamp-3">
         {node.label}
         {node.type === "CATEGORY" && node.collapsed && childCount > 0 && ` [+${childCount}]`}
       </div>
-      
-      {/* Port overlays for shift-drag connection logic if we wanted visual ports, not required but nice. We connect center-to-center. */}
     </div>
   );
 }

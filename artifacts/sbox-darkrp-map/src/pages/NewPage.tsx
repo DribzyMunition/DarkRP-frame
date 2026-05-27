@@ -16,6 +16,7 @@ export default function NewPage() {
   const { state, dispatch } = useGraphStore(STORAGE_KEY, initialNewState);
   const [saveFlash, setSaveFlash] = useState(false);
   const [webColor, setWebColor] = useState(() => localStorage.getItem(WEB_COLOR_KEY) || "#60a5fa");
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
 
   useEffect(() => {
     localStorage.setItem(WEB_COLOR_KEY, webColor);
@@ -30,11 +31,11 @@ export default function NewPage() {
   return (
     <div className="w-full h-screen relative bg-[#0d1623] text-slate-100 font-mono overflow-hidden">
       <Toolbar state={state} dispatch={dispatch} onSave={handleManualSave} />
-      <Canvas state={state} dispatch={dispatch} webColor={webColor} />
+      <Canvas state={state} dispatch={dispatch} webColor={webColor} editingNodeId={editingNodeId} onEditingNodeChange={setEditingNodeId} />
       <MiniMap state={state} />
       <ZoomHUD state={state} dispatch={dispatch} />
       <ShortcutsPanel />
-      <NodePad state={state} dispatch={dispatch} webColor={webColor} onWebColorChange={setWebColor} />
+      <NodePad state={state} dispatch={dispatch} webColor={webColor} onWebColorChange={setWebColor} onNodeCreated={setEditingNodeId} />
       <MapSwitcher />
 
       {saveFlash && (

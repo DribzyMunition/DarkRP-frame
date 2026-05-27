@@ -9,16 +9,27 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function nodeHitTest(n: { type: string; x: number; y: number }, wx: number, wy: number) {
+  const w = n.type === "CATEGORY" ? 250 : n.type === "NOTE" ? 200 : 150;
+  const h = n.type === "CATEGORY" ? 50 : n.type === "NOTE" ? 80 : 40;
+  return Math.abs(n.x - wx) < w / 2 && Math.abs(n.y - wy) < h / 2;
+}
+
 export function Canvas({
   state,
   dispatch,
   webColor,
+  editingNodeId,
+  onEditingNodeChange,
 }: {
   state: GraphState;
   dispatch: React.Dispatch<GraphAction>;
   webColor: string;
+  editingNodeId: string | null;
+  onEditingNodeChange: (id: string | null) => void;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
@@ -28,12 +39,11 @@ export function Canvas({
   const [nodeStartPos, setNodeStartPos] = useState({ x: 0, y: 0 });
 
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
+  const [connectionHoverNodeId, setConnectionHoverNodeId] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
-  const [editingNode, setEditingNode] = useState<string | null>(null);
-  const editInputRef = useRef<HTMLInputElement>(null);
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string | null } | null>(null);
 
@@ -62,17 +72,15 @@ export function Canvas({
     return () => el.removeEventListener("wheel", handleWheel);
   }, [state.viewport, dispatch]);
 
-  const screenToWorld = (sx: number, sy: number) => {
-    return {
-      x: (sx - state.viewport.x) / state.viewport.zoom,
-      y: (sy - state.viewport.y) / state.viewport.zoom,
-    };
-  };
+  const screenToWorld = (sx: number, sy: number) => ({
+    x: (sx - state.viewport.x) / state.viewport.zoom,
+    y: (sy - state.viewport.y) / state.viewport.zoom,
+  });
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 2) return;
     if (contextMenu) setContextMenu(null);
-    if (editingNode) setEditingNode(null);
+    if (editingNodeId) onEditingNodeChange(null);
 
     const target = e.target as HTMLElement;
     if (target.closest(".toolbar-container")) return;
@@ -89,7 +97,7 @@ export function Canvas({
     if (e.button === 2) return;
     e.stopPropagation();
     if (contextMenu) setContextMenu(null);
-    if (editingNode) setEditingNode(null);
+    if (editingNodeId) onEditingNodeChange(null);
 
     if (e.shiftKey) {
       setConnectingFrom(id);
@@ -122,6 +130,14 @@ export function Canvas({
         payload: { id: draggingNode, x: nodeStartPos.x + dx, y: nodeStartPos.y + dy },
       });
     }
+
+    if (connectingFrom) {
+      const wp = screenToWorld(e.clientX, e.clientY);
+      const hovered = state.nodes.find(
+        (n) => n.id !== connectingFrom && nodeHitTest(n, wp.x, wp.y)
+      );
+      setConnectionHoverNodeId(hovered?.id ?? null);
+    }
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {
@@ -130,19 +146,17 @@ export function Canvas({
 
     if (connectingFrom) {
       const worldPos = screenToWorld(e.clientX, e.clientY);
-      const targetNode = state.nodes.find((n) => {
-        const w = n.type === "CATEGORY" ? 250 : n.type === "NOTE" ? 200 : 150;
-        const h = n.type === "CATEGORY" ? 50 : n.type === "NOTE" ? 80 : 40;
-        return Math.abs(n.x - worldPos.x) < w / 2 && Math.abs(n.y - worldPos.y) < h / 2;
-      });
-
-      if (targetNode && targetNode.id !== connectingFrom) {
+      const targetNode = state.nodes.find(
+        (n) => n.id !== connectingFrom && nodeHitTest(n, worldPos.x, worldPos.y)
+      );
+      if (targetNode) {
         dispatch({
           type: "ADD_EDGE",
           payload: { id: `e_${Date.now()}`, from: connectingFrom, to: targetNode.id },
         });
       }
       setConnectingFrom(null);
+      setConnectionHoverNodeId(null);
     }
   };
 
@@ -155,7 +169,7 @@ export function Canvas({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" || e.key === "Backspace") {
-        if (selectedNode && !editingNode) {
+        if (selectedNode && !editingNodeId) {
           dispatch({ type: "DELETE_NODE", payload: selectedNode });
           setSelectedNode(null);
         }
@@ -167,23 +181,23 @@ export function Canvas({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedNode, selectedEdge, editingNode, dispatch]);
+  }, [selectedNode, selectedEdge, editingNodeId, dispatch]);
 
   const handleNodeDoubleClick = (id: string) => {
     const node = state.nodes.find((n) => n.id === id);
     if (node?.type === "CATEGORY") {
       dispatch({ type: "TOGGLE_COLLAPSE", payload: id });
     } else {
-      setEditingNode(id);
+      onEditingNodeChange(id);
     }
   };
 
   const handleLabelChange = (e: React.KeyboardEvent<HTMLInputElement>, id: string) => {
     if (e.key === "Enter") {
       dispatch({ type: "UPDATE_NODE", payload: { id, label: e.currentTarget.value } });
-      setEditingNode(null);
+      onEditingNodeChange(null);
     } else if (e.key === "Escape") {
-      setEditingNode(null);
+      onEditingNodeChange(null);
     }
   };
 
@@ -269,8 +283,8 @@ export function Canvas({
               x2={screenToWorld(mousePos.x, mousePos.y).x}
               y2={screenToWorld(mousePos.x, mousePos.y).y}
               stroke={edgeColorSelected}
-              strokeWidth={1}
-              strokeDasharray="4 4"
+              strokeWidth={1.5}
+              strokeDasharray="6 4"
             />
           )}
         </svg>
@@ -311,31 +325,37 @@ export function Canvas({
               onMouseDown={handleNodeMouseDown}
               onDoubleClick={handleNodeDoubleClick}
               onContextMenu={handleContextMenu}
+              isConnectionSource={connectingFrom === node.id}
+              isConnectionTarget={connectionHoverNodeId === node.id}
             />
           ))}
-          {editingNode && (
-            <div
-              style={{
-                position: "absolute",
-                left: state.nodes.find((n) => n.id === editingNode)?.x,
-                top: state.nodes.find((n) => n.id === editingNode)?.y,
-                transform: "translate(-50%, -50%)",
-                zIndex: 20,
-              }}
-            >
-              <input
-                ref={editInputRef}
-                autoFocus
-                className="bg-[#0d1623] border border-blue-400 text-blue-100 p-1 font-mono text-center outline-none"
-                defaultValue={state.nodes.find((n) => n.id === editingNode)?.label}
-                onKeyDown={(e) => handleLabelChange(e, editingNode)}
-                onBlur={(e) => {
-                  dispatch({ type: "UPDATE_NODE", payload: { id: editingNode, label: e.currentTarget.value } });
-                  setEditingNode(null);
+          {editingNodeId && (() => {
+            const editNode = state.nodes.find((n) => n.id === editingNodeId);
+            if (!editNode) return null;
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  left: editNode.x,
+                  top: editNode.y,
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 20,
                 }}
-              />
-            </div>
-          )}
+              >
+                <input
+                  ref={editInputRef}
+                  autoFocus
+                  className="bg-[#0d1623] border border-blue-400 text-blue-100 p-1 font-mono text-center outline-none min-w-[160px]"
+                  defaultValue={editNode.label}
+                  onKeyDown={(e) => handleLabelChange(e, editingNodeId)}
+                  onBlur={(e) => {
+                    dispatch({ type: "UPDATE_NODE", payload: { id: editingNodeId, label: e.currentTarget.value } });
+                    onEditingNodeChange(null);
+                  }}
+                />
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -370,7 +390,7 @@ export function Canvas({
               <button
                 className="px-4 py-1 text-left text-slate-200 hover:bg-blue-500/20 hover:text-blue-200 whitespace-nowrap transition-colors"
                 onClick={() => {
-                  setEditingNode(contextMenu.nodeId);
+                  onEditingNodeChange(contextMenu.nodeId);
                   setContextMenu(null);
                 }}
               >
