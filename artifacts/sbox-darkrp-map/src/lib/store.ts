@@ -38,13 +38,17 @@ function graphReducer(state: GraphState, action: GraphAction): GraphState {
   }
 }
 
-export function useGraphStore(storageKey: string, initialState: GraphState) {
+export function useGraphStore(
+  storageKey: string,
+  initialState: GraphState,
+  urlState?: GraphState | null,
+) {
   const [state, dispatch] = useReducer(graphReducer, null as any, () => {
+    // URL-shared state takes priority
+    if (urlState) return urlState;
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error("Failed to load map state", e);
     }

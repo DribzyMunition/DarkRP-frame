@@ -4,10 +4,12 @@ export function Toolbar({
   state,
   dispatch,
   onSave,
+  onShare,
 }: {
   state: GraphState;
   dispatch: React.Dispatch<GraphAction>;
   onSave: () => void;
+  onShare: () => void;
 }) {
   const handleClear = () => {
     if (confirm("Clear the entire map?")) {
@@ -74,7 +76,8 @@ export function Toolbar({
       <button onClick={loadData}  className={b}>[LOAD]</button>
       <button onClick={handleClear} className="px-2 py-1 border border-red-500/40 text-red-400 hover:bg-red-500/20 whitespace-nowrap transition-colors text-xs">[CLEAR]</button>
       <div className="flex-1" />
-      <button onClick={handleExport}  className={b}>[EXPORT JSON]</button>
+      <button onClick={onShare}      className={b}>[SHARE LINK]</button>
+      <button onClick={handleExport} className={b}>[EXPORT JSON]</button>
       <button onClick={handleZoomFit} className={b}>[ZOOM FIT]</button>
     </div>
   );
