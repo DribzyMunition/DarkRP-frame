@@ -1,5 +1,5 @@
 import { useGraphStore } from "@/lib/store";
-import { initialSystemsState } from "@/lib/initial-data-systems";
+import { initialNewState } from "@/lib/initial-data-new";
 import { Canvas } from "@/components/Canvas";
 import { Toolbar } from "@/components/Toolbar";
 import { MiniMap } from "@/components/MiniMap";
@@ -9,11 +9,11 @@ import { MapSwitcher } from "@/components/MapSwitcher";
 import { NodePad } from "@/components/NodePad";
 import { useState, useEffect } from "react";
 
-const STORAGE_KEY = "sbox-darkrp-systems-v1";
-const WEB_COLOR_KEY = "sbox-darkrp-webcolor-systems";
+const STORAGE_KEY = "sbox-darkrp-newpage-v1";
+const WEB_COLOR_KEY = "sbox-darkrp-webcolor-new";
 
-export default function MapEditor() {
-  const { state, dispatch } = useGraphStore(STORAGE_KEY, initialSystemsState);
+export default function NewPage() {
+  const { state, dispatch } = useGraphStore(STORAGE_KEY, initialNewState);
   const [saveFlash, setSaveFlash] = useState(false);
   const [webColor, setWebColor] = useState(() => localStorage.getItem(WEB_COLOR_KEY) || "#60a5fa");
 

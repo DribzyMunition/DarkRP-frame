@@ -7,13 +7,19 @@ import { ZoomHUD } from "@/components/ZoomHUD";
 import { ShortcutsPanel } from "@/components/ShortcutsPanel";
 import { MapSwitcher } from "@/components/MapSwitcher";
 import { NodePad } from "@/components/NodePad";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const STORAGE_KEY = "sbox-darkrp-jobmap-v2";
+const WEB_COLOR_KEY = "sbox-darkrp-webcolor-jobs";
 
 export default function JobMap() {
   const { state, dispatch } = useGraphStore(STORAGE_KEY, initialJobsState);
   const [saveFlash, setSaveFlash] = useState(false);
+  const [webColor, setWebColor] = useState(() => localStorage.getItem(WEB_COLOR_KEY) || "#60a5fa");
+
+  useEffect(() => {
+    localStorage.setItem(WEB_COLOR_KEY, webColor);
+  }, [webColor]);
 
   const handleManualSave = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -24,11 +30,11 @@ export default function JobMap() {
   return (
     <div className="w-full h-screen relative bg-[#0d1623] text-slate-100 font-mono overflow-hidden">
       <Toolbar state={state} dispatch={dispatch} onSave={handleManualSave} />
-      <Canvas state={state} dispatch={dispatch} />
+      <Canvas state={state} dispatch={dispatch} webColor={webColor} />
       <MiniMap state={state} />
       <ZoomHUD state={state} dispatch={dispatch} />
       <ShortcutsPanel />
-      <NodePad state={state} dispatch={dispatch} />
+      <NodePad state={state} dispatch={dispatch} webColor={webColor} onWebColorChange={setWebColor} />
       <MapSwitcher />
 
       {saveFlash && (

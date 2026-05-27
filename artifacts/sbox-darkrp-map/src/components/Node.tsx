@@ -22,7 +22,7 @@ export function Node({
   let border = "1px solid white";
   let bg = "black";
   let textColor = "white";
-  let classes = "flex items-center justify-center text-center p-2 box-border cursor-pointer absolute origin-top-left group";
+  let classes = "flex items-center justify-center text-center p-2 box-border cursor-pointer absolute origin-top-left group transition-colors duration-150";
   
   if (node.type === "CATEGORY") {
     w = 250;

@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import MapEditor from "@/pages/MapEditor";
 import JobMap from "@/pages/JobMap";
+import NewPage from "@/pages/NewPage";
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,7 @@ function Router() {
     <Switch>
       <Route path="/" component={MapEditor} />
       <Route path="/jobs" component={JobMap} />
+      <Route path="/new" component={NewPage} />
       <Route component={NotFound} />
     </Switch>
   );

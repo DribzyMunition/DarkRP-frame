@@ -2,7 +2,8 @@ import { useLocation } from "wouter";
 
 const maps = [
   { path: "/",      label: "SYSTEMS", sub: "MAP" },
-  { path: "/jobs",  label: "JOB",     sub: "MAP"  },
+  { path: "/jobs",  label: "JOB",     sub: "MAP" },
+  { path: "/new",   label: "NEW",     sub: "PAGE" },
 ];
 
 export function MapSwitcher() {
